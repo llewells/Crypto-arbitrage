@@ -3,7 +3,23 @@ NAME
     Arbitrage_bot.py
 
 DESCRIPTION
-    Testing the concept of crupto arbitrage on different excahnges
+    Testing the concept of crupto arbitrage on different exchanges
+
+NOTES
+    - logic grabs prices for every token, then pulls only the primary tokens.
+    - once prices have been collected for primarty tokens, triangle are found recursivly.
+    - search space is large for each token; timing is important for success, prices like to be out of date.
+
+TODO
+    - Reduce time between prices and identifing triangles (parrarellisum?)
+    - identify all paths before getting prices
+    - confirm logic w.r.t fee calculation; currentl value is hardcoded; obtain fee for each order?
+    - can orders be processed simtaniously?xtzbnb
+
+        i.e. usdt->btc->ltc->usdt would have 3 buy order actions are the same time.
+        For this to work does it mean that each token needs a set amount?
+    - add parameter to handle slippage.
+
 """
 
 from collections import defaultdict
@@ -11,6 +27,7 @@ import datetime
 from operator import itemgetter
 from time import time
 import csv
+from tqdm import tqdm
 
 from binance.client import Client
 
@@ -35,20 +52,29 @@ PRIMARY = [
 
 
 def main():
-    start_time = time()
-    csvfile = open("arbitrage.csv", "w", newline="", encoding="UTF8")
-    result_writer = csv.writer(csvfile, delimiter=",")
+
+    arb_file = open("arbitrage.csv", "w", newline="", encoding="UTF8")
+    result_writer = csv.writer(arb_file, delimiter=",")
     result_writer.writerow(["timestamp", "coins", "profit"])
+
+    stats_file = open("stats.csv", "w", newline="", encoding="UTF8")
+    stat_writer = csv.writer(stats_file, delimiter=",")
+    stat_writer.writerow(["iter", "duration", "found"])
 
     n = 0
     while n < ITERATIONS:
         n += 1
+        start_time = time()
         prices = get_prices()
         triangles = list(find_triangles(prices))
+        find_time = time() - start_time
+        print(f"ITER {n} - Time searching for triangles: {find_time} seconds")
         if triangles:
+            # this would be where buy instrructions would sit.
             for triangle in sorted(triangles, key=itemgetter("profit"), reverse=True):
                 describe_triangle(prices, triangle, result_writer)
             print("______")
+        stat_writer.writerow([n, find_time, bool(triangles)])
 
 
 def get_prices():
@@ -71,13 +97,13 @@ def get_prices():
 
 def find_triangles(prices):
     triangles = []
-    # starting_coin = "USDT"
-    for starting_coin in prices:
-        for triangle in recurse_triangle(prices, starting_coin, starting_coin):
-            coins = set(triangle["coins"])
-            if not any(prev_triangle == coins for prev_triangle in triangles):
-                yield triangle
-                triangles.append(coins)
+    starting_coin = "USDT"
+    # for starting_coin in prices:
+    for triangle in recurse_triangle(prices, starting_coin, starting_coin):
+        coins = set(triangle["coins"])
+        if not any(prev_triangle == coins for prev_triangle in triangles):
+            yield triangle
+            triangles.append(coins)
 
 
 def recurse_triangle(prices, current_coin, starting_coin, depth_left=3, amount=1.0):
