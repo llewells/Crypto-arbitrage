@@ -71,18 +71,13 @@ def get_prices():
 
 def find_triangles(prices):
     triangles = []
-    starting_coin = "USDT"
-    for triangle in recurse_triangle(prices, starting_coin, starting_coin):
-        coins = set(triangle["coins"])
-        if not any(prev_triangle == coins for prev_triangle in triangles):
-            yield triangle
-            triangles.append(coins)
-    starting_coin = "BUSD"
-    for triangle in recurse_triangle(prices, starting_coin, starting_coin):
-        coins = set(triangle["coins"])
-        if not any(prev_triangle == coins for prev_triangle in triangles):
-            yield triangle
-            triangles.append(coins)
+    # starting_coin = "USDT"
+    for starting_coin in prices:
+        for triangle in recurse_triangle(prices, starting_coin, starting_coin):
+            coins = set(triangle["coins"])
+            if not any(prev_triangle == coins for prev_triangle in triangles):
+                yield triangle
+                triangles.append(coins)
 
 
 def recurse_triangle(prices, current_coin, starting_coin, depth_left=3, amount=1.0):

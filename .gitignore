@@ -162,4 +162,7 @@ cython_debug/
 #.idea/
 
 # .env files to avoid API leaks
-.env
+*.env
+
+# remove saved csv files
+*.csv
