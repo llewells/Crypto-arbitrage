@@ -35,7 +35,7 @@ from config import API_KEY, API_SECRET
 
 
 FEE = 0.00075  # Binance VIP0 level spot-trade transaction fee for "Taker" (limit order)
-ITERATIONS = 5000  # iterations to run
+ITERATIONS = 50000  # iterations to run
 PRIMARY = [
     "ETH",
     "USDT",
@@ -68,7 +68,7 @@ def main():
         prices = get_prices()
         triangles = list(find_triangles(prices))
         find_time = time() - start_time
-        print(f"ITER {n} - Time searching for triangles: {find_time} seconds")
+        # print(f"ITER {n} - Time searching for triangles: {find_time} seconds")
         if triangles:
             # this would be where buy instrructions would sit.
             for triangle in sorted(triangles, key=itemgetter("profit"), reverse=True):

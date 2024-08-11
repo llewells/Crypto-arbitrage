@@ -3,3 +3,7 @@ scikit-learn==1.5.1
 numpy==2.0.1
 pandas==2.2.2
 tqdm==4.66.5
+matplotlib
+seaborn
+ipython==8.26.0
+ipykernel==6.29.5
