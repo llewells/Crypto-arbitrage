@@ -10,22 +10,35 @@ from collections import defaultdict
 import datetime
 from operator import itemgetter
 from time import time
-import csv, os
+import csv
 
 from binance.client import Client
 
-API_KEY = os.environ.get("BINANCE_API_KEY")
-API_SECRET = os.environ.get("BINANCE_API_SECRET")
+from config import API_KEY, API_SECRET
+
 
 FEE = 0.00075  # Binance VIP0 level spot-trade transaction fee for "Taker" (limit order)
 ITERATIONS = 5000  # iterations to run
-PRIMARY = ["ETH", "USDT", "BTC", "BNB", "ADA", "SOL", "LINK", "LTC", "UNI", "XTZ"]
+PRIMARY = [
+    "ETH",
+    "USDT",
+    "BTC",
+    "BUSD",
+    "BNB",
+    "ADA",
+    "SOL",
+    "LINK",
+    "LTC",
+    "UNI",
+    "XTZ",
+]
 
 
 def main():
     start_time = time()
-    csvfile = open("arbitrage", "w", newline="", encoding="UTF8")
+    csvfile = open("arbitrage.csv", "w", newline="", encoding="UTF8")
     result_writer = csv.writer(csvfile, delimiter=",")
+    result_writer.writerow(["timestamp", "coins", "profit"])
 
     n = 0
     while n < ITERATIONS:
@@ -35,7 +48,7 @@ def main():
         if triangles:
             for triangle in sorted(triangles, key=itemgetter("profit"), reverse=True):
                 describe_triangle(prices, triangle, result_writer)
-            print("________")
+            print("______")
 
 
 def get_prices():
